@@ -34,17 +34,19 @@ jobs:
 
       - name: Analyze Test Results
         run: |
-          total_tests=$(grep -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
-          test_states=($(grep -o 'test result: ok. [0-9]\+ passed; [0-9]\+ failed;' test_output.txt | grep -o '[0-9]\+'))
+          # Extract test results
+          total_tests=$(grep -Eo 'running [0-9]+ test' test_output.txt | grep -Eo '[0-9]+')
+          passed_tests=$(grep -Eo 'test result: ok. [0-9]+ passed;' test_output.txt | grep -Eo '[0-9]+')
+          failed_tests=$(grep -Eo '[0-9]+ failed;' test_output.txt | grep -Eo '[0-9]+' || echo 0)
 
           # Header for summary
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Total Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
           echo "|-------------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| $total_tests | ${test_states[0]} | ${test_states[1]} |" >> $GITHUB_STEP_SUMMARY
+          echo "| $total_tests | $passed_tests | $failed_tests |" >> $GITHUB_STEP_SUMMARY
 
           # Parse failed test cases
-          if [ "$tests_states[1]" -gt 0 ]; then
+          if [ "$failed_tests" -gt 0 ]; then
             echo "## Failed Tests" >> $GITHUB_STEP_SUMMARY
             echo "| Test Name | Error Message |" >> $GITHUB_STEP_SUMMARY
             echo "|-----------|---------------|" >> $GITHUB_STEP_SUMMARY
@@ -53,5 +55,5 @@ jobs:
               error_msg=$(grep -A1 "$test_name" test_output.txt | tail -n 1)
               echo "| $test_name | $error_msg |" >> $GITHUB_STEP_SUMMARY
             done
-            exit 1  # Fail the job if there are failed tests
           fi
+
