@@ -1,0 +1,34 @@
+name: Cargo Build & Test
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    name: Rust project - latest
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+          - nightly
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: Install Clippy and lint
+        run: rustup component add clippy && cargo clippy
+      - run: cargo build --verbose
+      - name: Run tests and save output
+        run: |
+          cargo test --all --verbose 2>&1 | tee test_output.txt
+        continue-on-error: true
+      - name: Generate summary
+        run: |
+          total_tests=$(grep -m 1 -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
+          echo "Total tests: $total_tests" >> $GITHUB_STEP_SUMMARY
+          test_states=($(grep  -m 1 -o 'test result: ok. [0-9]\+ passed; [0-9]\+ failed;' test_output.txt | grep -o '[0-9]\+'))
+          echo "Failed tests: ${test_states[1]}" >> $GITHUB_STEP_SUMMARY
+          echo "Passed tests: ${test_states[0]}" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
