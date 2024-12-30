@@ -40,8 +40,6 @@ jobs:
 
       - name: Analyze Test Results
         run: |
-          total_tests=$(grep -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
-          test_states=($(grep -o 'test result: ok. [0-9]\+ passed; [0-9]\+ failed;' test_output.txt | grep -o '[0-9]\+'))
 
           # Header for summary
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
