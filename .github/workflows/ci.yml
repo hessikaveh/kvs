@@ -36,9 +36,8 @@ jobs:
         run: |
           # Extract test results
           total_tests=$(grep -Eo 'running [0-9]+ tests?' test_output.txt | grep -Eo '[0-9]+' | awk '{s+=$1} END {print s}')
-          passed_tests=$(grep -c '... ok' test_output.txt)
-          failed_tests=$(grep -c '... FAILED' test_output.txt)
-
+          passed_tests=$(grep -c '^test .* \.\.\. ok$' test_output.txt)
+          failed_tests=$(grep -c '^test .* \.\.\. FAILED$' test_output.txt)
           # Summarize failed tests
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Total Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
