@@ -38,7 +38,9 @@ jobs:
           total_tests=$(grep -Eo 'running [0-9]+ test' test_output.txt | grep -Eo '[0-9]+')
           passed_tests=$(grep -Eo 'test result: ok. [0-9]+ passed;' test_output.txt | grep -Eo '[0-9]+')
           failed_tests=$(grep -Eo '[0-9]+ failed;' test_output.txt | grep -Eo '[0-9]+' || echo 0)
-
+          # Aggregate all failed tests into a single number
+          failed_tests_agg=$(echo "${failed_tests[*]}" | tr '\n' '+' | sed 's/+$/ /')
+          failed_tests_sum=$(echo "$failed_tests_agg" | bc)
           # Header for summary
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Total Tests | Passed | Failed |" >> $GITHUB_STEP_SUMMARY
@@ -46,7 +48,7 @@ jobs:
           echo "| $total_tests | $passed_tests | $failed_tests |" >> $GITHUB_STEP_SUMMARY
 
           # Parse failed test cases
-          if [ "$failed_tests" -gt 0 ]; then
+          if [ "$failed_tests_sum" -gt 0 ]; then
             echo "## Failed Tests" >> $GITHUB_STEP_SUMMARY
             echo "| Test Name | Error Message |" >> $GITHUB_STEP_SUMMARY
             echo "|-----------|---------------|" >> $GITHUB_STEP_SUMMARY
