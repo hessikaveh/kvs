@@ -36,6 +36,7 @@ jobs:
           echo "total_tests=$total_tests" >> $GITHUB_ENV
           echo "tests_passed=${test_states[0]}" >> $GITHUB_ENV
           echo "tests_failed=${test_states[1]}" >> $GITHUB_ENV
+        continue-on-error: true
 
       - name: Analyze Test Results
         run: |
