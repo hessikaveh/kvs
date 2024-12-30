@@ -30,16 +30,12 @@ jobs:
       - name: Run tests and save output
         run: |
           cargo test --all --verbose 2>&1 | tee test_output.txt
-          total_tests=$(grep -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
-          test_states=($(grep -o 'test result: ok. [0-9]\+ passed; [0-9]\+ failed;' test_output.txt | grep -o '[0-9]\+'))
-
-          echo "total_tests=$total_tests" >> $GITHUB_ENV
-          echo "tests_passed=${test_states[0]}" >> $GITHUB_ENV
-          echo "tests_failed=${test_states[1]}" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Analyze Test Results
         run: |
+          total_tests=$(grep -o 'running [0-9]\+ test' test_output.txt | grep -o '[0-9]\+')
+          test_states=($(grep -o 'test result: ok. [0-9]\+ passed; [0-9]\+ failed;' test_output.txt | grep -o '[0-9]\+'))
 
           # Header for summary
           echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
@@ -48,7 +44,7 @@ jobs:
           echo "| $total_tests | ${test_states[0]} | ${test_states[1]} |" >> $GITHUB_STEP_SUMMARY
 
           # Parse failed test cases
-          if [ "$tests_failed" -gt 0 ]; then
+          if [ "$tests_states[1]" -gt 0 ]; then
             echo "## Failed Tests" >> $GITHUB_STEP_SUMMARY
             echo "| Test Name | Error Message |" >> $GITHUB_STEP_SUMMARY
             echo "|-----------|---------------|" >> $GITHUB_STEP_SUMMARY
