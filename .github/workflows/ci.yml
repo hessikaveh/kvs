@@ -67,8 +67,3 @@ jobs:
             done
             exit 1
           fi
-        
-      - name: Fail if tests failed (Stable Only)
-        if: failure() && matrix.toolchain == 'stable'
-        run: exit 1
-
